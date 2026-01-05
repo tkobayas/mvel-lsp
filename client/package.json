@@ -1,0 +1,78 @@
+{
+  "name": "vscode-extension-mvel3-editor",
+  "displayName": "Mvel3 Editor",
+  "description": "Edit Mvel3 (MVFLEX Expression Language) files",
+  "publisher": "mvel",
+  "version": "3.0.0-alpha",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tkobayas/mvel-lsp.git"
+  },
+  "engines": {
+    "vscode": "^1.62.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:mvel3"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.vscode-extension-mvel3-editor",
+        "title": "Mvel3"
+      }
+    ],
+    "languages": [
+      {
+        "id": "mvel3",
+        "aliases": [
+          "MVEL3",
+          "mvel3"
+        ],
+        "extensions": [
+          ".mvel"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "mvel3",
+        "scopeName": "source.mvel3",
+        "path": "./syntaxes/mvel3.tmLanguage"
+      }
+    ],
+    "javaExtensions": [
+      "./lib/mvel3-lsp-server-jar-with-dependencies.jar"
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "pack:dev": "mkdir ./dist; vsce package --githubBranch main -o ./dist/"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.4",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "14.x",
+    "@types/vscode": "^1.62.0",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.1.0",
+    "@vscode/test-electron": "^1.6.2",
+    "@vscode/vsce": "^2.19.0",
+    "eslint": "^8.1.0",
+    "glob": "^7.1.7",
+    "mocha": "^11.2.2",
+    "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "vscode-languageclient": "5.1.1"
+  }
+}

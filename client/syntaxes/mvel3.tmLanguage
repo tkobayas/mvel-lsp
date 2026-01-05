@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>.mvel</string>
+	</array>
+	<key>name</key>
+	<string>Mvel3</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>comment</key>
+			<string>Mathematical operators</string>
+			<key>match</key>
+			<string>[&lt;|&gt;|==|&lt;=|&gt;=|.|!=]</string>
+			<key>name</key>
+			<string>keyword.operator.source.mvel3</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>hard keywords</string>
+			<key>match</key>
+			<string>\b(true|false|null)\b</string>
+			<key>name</key>
+			<string>constant.language.source.mvel3</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Java classes</string>
+			<key>match</key>
+			<string>\b([A-Z][A-Za-z_]+)\b</string>
+			<key>name</key>
+			<string>support.type.source.mvel3</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Single line comment</string>
+			<key>match</key>
+			<string>(\/)(\/).*</string>
+			<key>name</key>
+			<string>comment.line.double-slash.source.mvel3</string>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>/\*</string>
+			<key>comment</key>
+			<string>Multi line comment</string>
+			<key>end</key>
+			<string>\*/</string>
+			<key>name</key>
+			<string>comment.line.double-slash.source.mvel3</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Double quote strings</string>
+			<key>match</key>
+			<string>("([^"]|"")*")</string>
+			<key>name</key>
+			<string>string.quoted.double.source.mvel3</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Numbers</string>
+			<key>match</key>
+			<string>([0-9]+(\.)?[0-9]*)</string>
+			<key>name</key>
+			<string>constant.numeric.source.mvel3</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>source.mvel3</string>
+</dict>
+</plist>
