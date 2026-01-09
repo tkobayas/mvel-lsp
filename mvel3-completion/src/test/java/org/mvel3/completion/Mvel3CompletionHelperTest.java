@@ -1,5 +1,6 @@
 package org.mvel3.completion;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.lsp4j.CompletionItem;
@@ -16,26 +17,46 @@ import static org.mvel3.completion.Mvel3CompletionHelper.completionItemStrings;
 class Mvel3CompletionHelperTest {
 
     @Test
-    void testSimpleBlock() {
-        String text = "{ l#ArrayList#removeRange(0, 10); }";
+    void testInlineCast() {
+
+        Mvel3CompletionHelper helper = new Mvel3CompletionHelper();
+        helper.addImportedClass(ArrayList.class);
+
+        String text = """
+                package org.example;
+
+                import java.util.List;
+                import java.util.ArrayList;
+
+                public class GeneratorEvaluator__ {
+                    public void eval(List l) {
+                        l#ArrayList#.trimToSize();
+                    }
+                }
+                """;
 
         Position caretPosition = new Position();
         List<CompletionItem> result;
 
-        // Test completion at the beginning of the block
-//        caretPosition.setLine(0);
-//        caretPosition.setCharacter(2);
-//        result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
-//        assertThat(completionItemStrings(result)).contains("var", "int", "return");
+        // Test completion at the beginning of the method block
+        caretPosition.setLine(7);
+        caretPosition.setCharacter(8);
+        result = helper.getCompletionItems(text, caretPosition);
+        assertThat(completionItemStrings(result)).contains("var", "int", "return", "modify"); // 'modify' is a MVEL keyword
 
-        // Test completion before 'rule '
-        caretPosition.setLine(0);
-        caretPosition.setCharacter(4);
-        result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
-
-        System.out.println(completionItemStrings(result));
+        // Test completion after 'l#'
+        caretPosition.setLine(7);
+        caretPosition.setCharacter(10);
+        result = helper.getCompletionItems(text, caretPosition);
 
         assertThat(completionItemStrings(result)).contains("ArrayList");
+
+        // Test completion after '#ArrayList#.'
+        caretPosition.setLine(7);
+        caretPosition.setCharacter(21);
+        result = helper.getCompletionItems(text, caretPosition);
+
+        assertThat(completionItemStrings(result)).contains("trimToSize");
     }
 
     @Test

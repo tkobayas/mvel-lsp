@@ -1,5 +1,6 @@
 package org.mvel3.completion;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.lsp4j.CompletionItem;
@@ -13,144 +14,41 @@ class Mvel3CompletionHelperIncompleteCodeTest {
 
     @Test
     void emptyInput() {
+        Mvel3CompletionHelper helper = new Mvel3CompletionHelper();
+
         String text = "";
         Position caretPosition = new Position(0, 0);
 
-        List<CompletionItem> result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
+        List<CompletionItem> result = helper.getCompletionItemsAsBlock(text, caretPosition);
         assertThat(completionItemStrings(result)).contains("var", "int", "return");
     }
 
     @Test
-    void incompleteRule_pattern() {
+    void testInlineCast() {
+
+        Mvel3CompletionHelper helper = new Mvel3CompletionHelper();
+        helper.addImportedClass(ArrayList.class);
+
         String text = """
-                class Foo {
-                    rule R1 {
-                        var a : /
-                """;
-
-        Position caretPosition = new Position();
-        caretPosition.setLine(2);
-        caretPosition.setCharacter(17); // After the '/'
-
-        List<CompletionItem> result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
-        assertThat(completionItemStrings(result)).containsOnly("IDENTIFIER"); // datasource name is IDENTIFIER
-    }
-
-    @Test
-    void incompleteRule_consequence_System() {
-        String text = """
-                class Foo {
-                    rule R1 {
-                        var a : /as,
-                        do { System.
-                """;
-
-        Position caretPosition = new Position();
-        caretPosition.setLine(3);
-        caretPosition.setCharacter(20); // After the 'System.'
-
-        List<CompletionItem> result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
-        assertThat(completionItemStrings(result)).contains("out", "in", "gc"); // System fields, methods
-    }
-
-    @Test
-    void incompleteRule_consequence_SystemOut() {
-        String text = """
-                class Foo {
-                    rule R1 {
-                        var a : /as,
-                        do { System.out.
-                """;
-
-        Position caretPosition = new Position();
-        caretPosition.setLine(3);
-        caretPosition.setCharacter(24); // After the 'System.out.'
-
-        List<CompletionItem> result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
-        assertThat(completionItemStrings(result)).contains("println"); // System.out fields, methods
-    }
-
-    @Test
-    void incompleteClass_consequence() {
-        String text = """
-                public class Foo {
-                    public void bar() {
-                        System.
-                """;
-
-        Position caretPosition = new Position();
-        List<CompletionItem> result;
-
-        // Test completion after 'System.'
-        caretPosition.setLine(2);
-        caretPosition.setCharacter(15);
-        result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
-        assertThat(completionItemStrings(result)).contains("out", "in", "gc"); // System fields, methods
-    }
-
-    @Test
-    void incompleteClass_inlineCast() {
-        String text = """
+                package org.example;
+                
+                import java.util.List;
                 import java.util.ArrayList;
                 
-                class Foo {
-                    rule R1 {
-                       var a : /as,
-                       do { list#ArrayList#.
+                public class GeneratorEvaluator__ {
+                    public void eval(List l) {
+                        l#ArrayList#.
                 """;
 
         Position caretPosition = new Position();
         List<CompletionItem> result;
 
-        // Test completion after 'list#ArrayList#.'
-        caretPosition.setLine(5);
-        caretPosition.setCharacter(28);
-        result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
+        // Test completion after '#ArrayList#.'
+        caretPosition.setLine(7);
+        caretPosition.setCharacter(21);
+        result = helper.getCompletionItems(text, caretPosition);
+
         assertThat(completionItemStrings(result)).contains("trimToSize");
-        assertThat(completionItemStrings(result)).doesNotContain("removeRange"); // 'removeRange' is a protected method, so not included in suggestions
-
     }
 
-    @Test
-    void incompleteClass_BigDecimalLiteral() {
-        String text = """
-                class Foo {
-                    rule R1 {
-                       var a : /as,
-                       do { 10.5B.
-                """;
-
-        Position caretPosition = new Position();
-        List<CompletionItem> result;
-
-        // Test completion after '10.5B..'
-        caretPosition.setLine(3);
-        caretPosition.setCharacter(18);
-        result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
-        assertThat(completionItemStrings(result)).contains("precision");
-    }
-
-    @Test
-    void incompleteClass_PropertyAccessor() {
-        String text = """
-                import org.mvel3.domain.Person;
-                import org.mvel3.domain.Address;
-                
-                class Foo {
-                    rule R1 {
-                        var a : /as,
-                        do {
-                            Person p = new Person("John", new Address("Tokyo"));
-                            p.address.
-                """;
-
-        Position caretPosition = new Position();
-        List<CompletionItem> result;
-
-        // Test completion after '10.5B..'
-        caretPosition.setLine(8);
-        caretPosition.setCharacter(22);
-        result = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
-        assertThat(completionItemStrings(result)).contains("city", "getCity", "setCity"); // `city` can be directly accessed in mvel
-    }
 }

@@ -97,7 +97,8 @@ public class Mvel3LspDocumentService implements TextDocumentService {
         logger.info("Completion requested for {} at position {}:{}", uri, caretPosition.getLine(), caretPosition.getCharacter());
         logger.debug("Document text length: {}", text != null ? text.length() : 0);
 
-        List<CompletionItem> completionItems = Mvel3CompletionHelper.getCompletionItems(text, caretPosition);
+        Mvel3CompletionHelper helper = new Mvel3CompletionHelper();
+        List<CompletionItem> completionItems = helper.getCompletionItems(text, caretPosition);
 
         server.getClient().showMessage(new MessageParams(MessageType.Info, "Position=[" + caretPosition.getLine() + "," + caretPosition.getCharacter() + "]"));
         server.getClient().showMessage(new MessageParams(MessageType.Info, "completionItems = " + completionItemStrings(completionItems)));

@@ -1,6 +1,7 @@
 package org.mvel3.completion;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,42 +40,72 @@ public class Mvel3CompletionHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(Mvel3CompletionHelper.class);
 
+    // Map<FQCN, simpleName>
+    private Map<String, String> importedClasses = new HashMap<>();
+
     private static final Set<Integer> PREFERRED_RULES = Set.of(
-            Mvel3Parser.RULE_typeIdentifier
+            Mvel3Parser.RULE_typeIdentifier,
+            Mvel3Parser.RULE_methodCall
     );
 
-    private Mvel3CompletionHelper() {
+    private static final String COMPILATION_UNIT_TEMPLATE =
+            """
+                    package org.mvel3;
+                    
+                    public class GeneratorEvaluaor__ {
+                        public void eval(java.util.Map __context) {
+                            java.util.List l = (java.util.List) __context.get("l");
+                            %s
+                        }
+                    }
+                    """;
+
+
+    public Mvel3CompletionHelper() {
+    }
+
+    public void addImportedClass(Class<?> clazz) {
+        addImportedClass(clazz.getCanonicalName());
+    }
+
+    public void addImportedClass(String fqcn) {
+        importedClasses.put(fqcn, fqcn.substring(fqcn.lastIndexOf('.') + 1));
     }
 
     // TODO: create wrapper methods to complement text for the context (e.g. expression, block, etc.)
-    public static List<CompletionItem> getCompletionItemsAsBlock(String text, Position caretPosition) {
-        String blockString =  "{ " + text + " }";
-        caretPosition.setCharacter(caretPosition.getCharacter() + "{ ".length());
-        return getCompletionItems(blockString, caretPosition);
+    public List<CompletionItem> getCompletionItemsAsBlock(String text, Position caretPosition) {
+        String compilationUnitStr = COMPILATION_UNIT_TEMPLATE.formatted(text);
+        caretPosition.setLine(caretPosition.getLine() + 6);
+        caretPosition.setCharacter(caretPosition.getCharacter() + 8);
+        return getCompletionItems(compilationUnitStr, caretPosition);
     }
 
     // This method takes the valid (adjusted) text and caret position
-    public static List<CompletionItem> getCompletionItems(String text, Position caretPosition) {
+    public List<CompletionItem> getCompletionItems(String text, Position caretPosition) {
         Mvel3Parser parser = createMvel3Parser(text);
 
         int row = caretPosition == null ? -1 : caretPosition.getLine() + 1;
         int col = caretPosition == null ? -1 : caretPosition.getCharacter();
 
-        ParseTree parseTree = parser.block(); // consider block/expression or other?
+        ParseTree parseTree = parser.compilationUnit();
         Integer caretTokenIndex = computeTokenIndex(parser, row, col);
 
         return getCompletionItems(parser, caretTokenIndex, parseTree);
     }
 
 
-    static List<CompletionItem> getCompletionItems(Mvel3Parser parser, int caretTokenIndex, ParseTree parseTree) {
+    List<CompletionItem> getCompletionItems(Mvel3Parser parser, int caretTokenIndex, ParseTree parseTree) {
         CodeCompletionCore core = new CodeCompletionCore(parser, PREFERRED_RULES, Tokens.IGNORED);
         CodeCompletionCore.CandidatesCollection candidates = core.collectCandidates(caretTokenIndex, (ParserRuleContext) parseTree);
 
         if (candidates.rules.size() > 0) {
-            return processPrefferedRules(candidates, parser, parseTree, caretTokenIndex);
+            return processPreferredRules(candidates, parser, parseTree, caretTokenIndex);
         }
 
+        return getCompletionItemsFromTokens(parser, candidates);
+    }
+
+    private static List<CompletionItem> getCompletionItemsFromTokens(Mvel3Parser parser, CodeCompletionCore.CandidatesCollection candidates) {
         return candidates.tokens.keySet().stream()
                 .filter(Objects::nonNull)
                 .map(integer -> parser.getVocabulary().getDisplayName(integer).replace("'", ""))
@@ -83,13 +114,25 @@ public class Mvel3CompletionHelper {
                 .collect(Collectors.toList());
     }
 
-    private static List<CompletionItem> processPrefferedRules(CodeCompletionCore.CandidatesCollection candidates, Mvel3Parser parser, ParseTree parseTree, int caretTokenIndex) {
+    private List<CompletionItem> processPreferredRules(CodeCompletionCore.CandidatesCollection candidates, Mvel3Parser parser, ParseTree parseTree, int caretTokenIndex) {
         List<CompletionItem> items = new ArrayList<>();
         for ( Map.Entry<Integer, java.util.List<Integer>> ruleEntry : candidates.rules.entrySet()) {
             Integer ruleIndex = ruleEntry.getKey();
             switch (ruleIndex) {
                 case Mvel3Parser.RULE_typeIdentifier:
-                    items.add(createCompletionItem("ArrayList", CompletionItemKind.Text));
+                    for (String simpleName : importedClasses.values()) {
+                        items.add(createCompletionItem(simpleName, CompletionItemKind.Text));
+                    }
+
+                    if (!isInlineCast(parser, caretTokenIndex)) {
+                        // in general cases, add all possible keywords
+                        items.addAll(getCompletionItemsFromTokens(parser, candidates));
+                    }
+
+                    // add other available types?
+                    break;
+                case Mvel3Parser.RULE_methodCall:
+                    items.addAll(createSemanticCompletions(parser, parseTree, caretTokenIndex));
                     break;
                 default:
                     // no-op
@@ -98,7 +141,14 @@ public class Mvel3CompletionHelper {
         return items;
     }
 
-    private static List<CompletionItem> createSemanticCompletions(Mvel3Parser parser, ParseTree parseTree, int caretTokenIndex) {
+    private boolean isInlineCast(Mvel3Parser parser, int caretTokenIndex) {
+        if (caretTokenIndex < 1) {
+            return false;
+        }
+        return parser.getTokenStream().get(caretTokenIndex - 1).getType() == Mvel3Lexer.HASH;
+    }
+
+    private List<CompletionItem> createSemanticCompletions(Mvel3Parser parser, ParseTree parseTree, int caretTokenIndex) {
 
         logger.info("createSemanticCompletions");
 
