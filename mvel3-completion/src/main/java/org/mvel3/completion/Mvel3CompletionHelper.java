@@ -33,6 +33,7 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.Position;
 import org.mvel3.parser.antlr4.Mvel3Lexer;
 import org.mvel3.parser.antlr4.Mvel3Parser;
+import org.mvel3.parser.antlr4.Mvel3ParserBaseVisitor;
 import org.mvel3.parser.antlr4.TolerantMvel3ToJavaParserVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,17 @@ public class Mvel3CompletionHelper {
 
 
     public Mvel3CompletionHelper() {
+        initImportedClasses();
+    }
+
+    private void initImportedClasses() {
+        // Add default imported classes
+        addImportedClass("java.lang.String");
+        addImportedClass("java.lang.Integer");
+        addImportedClass("java.lang.Long");
+        addImportedClass("java.lang.Double");
+        addImportedClass("java.lang.Float");
+        addImportedClass("java.lang.Boolean");
     }
 
     public void addImportedClass(Class<?> clazz) {
@@ -91,9 +103,22 @@ public class Mvel3CompletionHelper {
         ParseTree parseTree = parser.compilationUnit();
         Integer caretTokenIndex = computeTokenIndex(parser, row, col);
 
+        populateImportedClasses(parseTree);
+
         return getCompletionItems(parser, caretTokenIndex, parseTree);
     }
 
+    private void populateImportedClasses(ParseTree parseTree) {
+        // create an anonymous visitor to collect imported classes
+        parseTree.accept(new Mvel3ParserBaseVisitor<Void>() {
+            @Override
+            public Void visitImportDeclaration(Mvel3Parser.ImportDeclarationContext ctx) {
+                String fqcn = ctx.qualifiedName().getText();
+                addImportedClass(fqcn);
+                return null;
+        }
+        });
+    }
 
     List<CompletionItem> getCompletionItems(Mvel3Parser parser, int caretTokenIndex, ParseTree parseTree) {
         CodeCompletionCore core = new CodeCompletionCore(parser, PREFERRED_RULES, Tokens.IGNORED);

@@ -1,5 +1,6 @@
 package org.mvel3.completion;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import static org.mvel3.completion.Mvel3CompletionHelper.completionItemStrings;
 
 /**
  * Tests for Mvel3CompletionHelper completion suggestions in various positions
- * within a simple complete mvel block.
+ * within a simple complete input.
  */
 class Mvel3CompletionHelperTest {
 
@@ -20,7 +21,6 @@ class Mvel3CompletionHelperTest {
     void testInlineCast() {
 
         Mvel3CompletionHelper helper = new Mvel3CompletionHelper();
-        helper.addImportedClass(ArrayList.class);
 
         String text = """
                 package org.example;
@@ -57,6 +57,54 @@ class Mvel3CompletionHelperTest {
         result = helper.getCompletionItems(text, caretPosition);
 
         assertThat(completionItemStrings(result)).contains("trimToSize");
+    }
+
+    @Test
+    void testJavaCompletion() {
+        String text = """
+                import java.math.BigDecimal;
+                
+                public class Foo {
+                    public void work(BigDecimal bd) {
+                        System.out.println(bd == 3.2B);
+                    }
+                }
+                """;
+
+        Mvel3CompletionHelper helper = new Mvel3CompletionHelper();
+
+        Position caretPosition = new Position();
+        List<CompletionItem> result;
+
+        // Test completion at beginning of file
+        caretPosition.setLine(0);
+        caretPosition.setCharacter(0);
+        result = helper.getCompletionItems(text, caretPosition);
+        assertThat(completionItemStrings(result)).contains("package", "import", "class");
+
+        // Test completion before 'public'
+        caretPosition.setLine(3);
+        caretPosition.setCharacter(4);
+        result = helper.getCompletionItems(text, caretPosition);
+        assertThat(completionItemStrings(result)).contains("public");
+
+        // Test completion after 'work('
+        caretPosition.setLine(3);
+        caretPosition.setCharacter(21);
+        result = helper.getCompletionItems(text, caretPosition);
+        assertThat(completionItemStrings(result)).contains("int", "String", "BigDecimal"); // list of possible types
+
+        // Test completion after 'System.'
+        caretPosition.setLine(4);
+        caretPosition.setCharacter(15);
+        result = helper.getCompletionItems(text, caretPosition);
+        assertThat(completionItemStrings(result)).contains("out");
+
+        // Test completion after 'out.'
+        caretPosition.setLine(4);
+        caretPosition.setCharacter(19);
+        result = helper.getCompletionItems(text, caretPosition);
+        assertThat(completionItemStrings(result)).contains("println");
     }
 
     @Test

@@ -59,7 +59,7 @@ class Mvel3LspDocumentServiceTest {
         // Test completion after 'work('
         completionParams.setPosition(new Position(3, 21));
         result = mvel3LspDocumentService.getCompletionItems(completionParams);
-        assertThat(completionItemStrings(result)).contains("int", "BigDecimal"); // list of possible types
+        assertThat(completionItemStrings(result)).contains("int", "String", "BigDecimal"); // list of possible types
 
         // Test completion after 'System.'
         completionParams.setPosition(new Position(4, 15));
@@ -71,7 +71,6 @@ class Mvel3LspDocumentServiceTest {
         result = mvel3LspDocumentService.getCompletionItems(completionParams);
         assertThat(completionItemStrings(result)).contains("println");
     }
-
 
     @Test
     void getCompletionItems_incompleteRule() {
