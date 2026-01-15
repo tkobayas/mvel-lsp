@@ -30,12 +30,13 @@ class Mvel3LspDocumentServiceTest {
     }
 
     @Test
-    void getCompletionItems_mvel3block() {
+    void getCompletionItems_javaCompletion() {
         String mvelString = """
-                class Foo {
-                    rule R1 {
-                        var a : /as,
-                        do { System.out.println(a == 3.2B);}
+                import java.math.BigDecimal;
+                
+                public class Foo {
+                    public void work(BigDecimal bd) {
+                        System.out.println(bd == 3.2B);
                     }
                 }
                 """;
@@ -50,67 +51,36 @@ class Mvel3LspDocumentServiceTest {
         List<CompletionItem> result = mvel3LspDocumentService.getCompletionItems(completionParams);
         assertThat(completionItemStrings(result)).contains("package", "import", "class");
 
-        // Test completion after 'rule '
-        completionParams.setPosition(new Position(1, 9));
+        // Test completion before 'public'
+        completionParams.setPosition(new Position(3, 4));
         result = mvel3LspDocumentService.getCompletionItems(completionParams);
-        assertThat(completionItemStrings(result)).containsOnly("IDENTIFIER");
+        assertThat(completionItemStrings(result)).contains("public");
 
-        // Test completion after 'var '
-        completionParams.setPosition(new Position(2, 12));
+        // Test completion after 'work('
+        completionParams.setPosition(new Position(3, 21));
         result = mvel3LspDocumentService.getCompletionItems(completionParams);
-        assertThat(completionItemStrings(result)).containsOnly("IDENTIFIER");
+        assertThat(completionItemStrings(result)).contains("int", "BigDecimal"); // list of possible types
 
-        // Test completion after '/'
-        completionParams.setPosition(new Position(2, 17));
+        // Test completion after 'System.'
+        completionParams.setPosition(new Position(4, 15));
         result = mvel3LspDocumentService.getCompletionItems(completionParams);
-        assertThat(completionItemStrings(result)).containsOnly("IDENTIFIER");
+        assertThat(completionItemStrings(result)).contains("out");
 
-        // Test completion inside do block
-        completionParams.setPosition(new Position(3, 12));
+        // Test completion after 'out.'
+        completionParams.setPosition(new Position(4, 19));
         result = mvel3LspDocumentService.getCompletionItems(completionParams);
-        assertThat(result).isNotEmpty();
-        // Should have Java keywords
-        assertThat(completionItemStrings(result)).contains("int", "var", "if");
+        assertThat(completionItemStrings(result)).contains("println");
     }
 
-    @Test
-    void getCompletionItems_multipleRules() {
-        String mvelString = """
-                class Foo {
-                    rule R1 {
-                        var a : /as,
-                        do { System.out.println(a);}
-                    }
-                    
-                    rule R2 {
-                        var b : /bs,
-                        do { System.out.println(b);}
-                    }
-                }
-                """;
-
-        Mvel3LspDocumentService mvel3LspDocumentService = getMvel3LspDocumentService(mvelString);
-
-        CompletionParams completionParams = new CompletionParams();
-        completionParams.setTextDocument(new TextDocumentIdentifier("myDocument"));
-
-        // Test completion between rules
-        completionParams.setPosition(new Position(5, 0));
-        List<CompletionItem> result = mvel3LspDocumentService.getCompletionItems(completionParams);
-        assertThat(completionItemStrings(result)).contains("rule");
-
-        // Test completion in second rule
-        completionParams.setPosition(new Position(7, 17));
-        result = mvel3LspDocumentService.getCompletionItems(completionParams);
-        assertThat(completionItemStrings(result)).containsOnly("IDENTIFIER");
-    }
 
     @Test
     void getCompletionItems_incompleteRule() {
         String mvelString = """
-                class Foo {
-                    rule R1 {
-                        var a : /
+                import java.math.BigDecimal;
+                
+                public class Foo {
+                    public void work(BigDecimal bd) {
+                        System.out.
                 """;
 
         Mvel3LspDocumentService mvel3LspDocumentService = getMvel3LspDocumentService(mvelString);
@@ -118,9 +88,9 @@ class Mvel3LspDocumentServiceTest {
         CompletionParams completionParams = new CompletionParams();
         completionParams.setTextDocument(new TextDocumentIdentifier("myDocument"));
         
-        // Test completion after incomplete '/'
-        completionParams.setPosition(new Position(2, 17));
+        // Test completion after incomplete 'System.out.'
+        completionParams.setPosition(new Position(4, 19));
         List<CompletionItem> result = mvel3LspDocumentService.getCompletionItems(completionParams);
-        assertThat(completionItemStrings(result)).containsOnly("IDENTIFIER");
+        assertThat(completionItemStrings(result)).contains("println");
     }
 }

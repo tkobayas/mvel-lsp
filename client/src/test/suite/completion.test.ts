@@ -10,10 +10,10 @@ import { getDocUri, activate } from './helper';
 suite('Completion tests', () => {
 	const docUri = getDocUri('incomplete.mvel');
 
-	test('Completes "rule" inside class', async () => {
-		await testCompletion(docUri, new vscode.Position(1, 2), {
+	test('Completes "trimToSize" after ArrayList', async () => {
+		await testCompletion(docUri, new vscode.Position(7, 21), {
 			items: [
-				{ label: 'rule', kind: vscode.CompletionItemKind.Keyword }
+				{ label: 'trimToSize', kind: vscode.CompletionItemKind.Method }
 			]
 		});
 	}).timeout(20000); // increase timeout from the default 2000ms because helper.activate waits 2000ms for server startup

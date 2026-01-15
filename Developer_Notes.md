@@ -35,3 +35,10 @@ For client-side tests, goto `client` directory and run:
 npm install
 npm test
 ```
+
+## Debug logging
+### Enable antlr4-c3 debug logging
+Edit `mvel3-completion/src/test/resources/logging.properties` for `com.vmware.antlr4c3.level` to `FINE`. (But revisit when upgrading antlr4-c3 version, as the logging library may have changed.)
+
+### Enable debug logging for VSCODE extension
+`mvel3-lsp-server/src/main/resources/logback.xml` is included in `mvel3-lsp-server-jar-with-dependencies.jar`, so `logs/mvel3-lsp-server.log` is created under the current working directory. Confirmed with unit tests and actual VSCODE extension run. However `npm test` does not seem to create the log file; need to investigate further.

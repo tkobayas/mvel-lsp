@@ -1,5 +1,6 @@
 package org.mvel3.completion;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -169,10 +170,14 @@ public class Mvel3CompletionHelper {
             CompilationUnit compilationUnit = (CompilationUnit) visitor.visit(parseTree);
 
             // We can adjust the paths for the vscode project where the user is working (e.g. dependencies by pom.xml)
-            TypeSolver typeSolver = new TypeSolverBuilder()
-                    .withCurrentClassloader() // equivalent to ReflectionTypeSolver
-                    .withSourceCode("src/main/java") // project source code
-                    .build();
+            TypeSolverBuilder typeSolverBuilder = new TypeSolverBuilder()
+                    .withCurrentClassloader(); // equivalent to ReflectionTypeSolver
+
+            if (Paths.get("src/main/java").toFile().exists()) {
+                typeSolverBuilder.withSourceCode("src/main/java"); // project source code
+            }
+
+            TypeSolver typeSolver = typeSolverBuilder.build();
 
             JavaSymbolSolver solver = new JavaSymbolSolver(typeSolver);
             solver.inject(compilationUnit);

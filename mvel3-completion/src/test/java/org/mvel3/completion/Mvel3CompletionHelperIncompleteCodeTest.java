@@ -19,8 +19,8 @@ class Mvel3CompletionHelperIncompleteCodeTest {
         String text = "";
         Position caretPosition = new Position(0, 0);
 
-        List<CompletionItem> result = helper.getCompletionItemsAsBlock(text, caretPosition);
-        assertThat(completionItemStrings(result)).contains("var", "int", "return");
+        List<CompletionItem> result = helper.getCompletionItems(text, caretPosition);
+        assertThat(completionItemStrings(result)).contains("package", "import", "class"); // top level statement
     }
 
     @Test
@@ -50,5 +50,4 @@ class Mvel3CompletionHelperIncompleteCodeTest {
 
         assertThat(completionItemStrings(result)).contains("trimToSize");
     }
-
 }
