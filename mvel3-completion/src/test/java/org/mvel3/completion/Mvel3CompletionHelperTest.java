@@ -94,6 +94,13 @@ class Mvel3CompletionHelperTest {
         result = helper.getCompletionItems(text, caretPosition);
         assertThat(completionItemStrings(result)).contains("int", "String", "BigDecimal"); // list of possible types
 
+        // Test completion before 'System.'
+        caretPosition.setLine(4);
+        caretPosition.setCharacter(8);
+        result = helper.getCompletionItems(text, caretPosition);
+        System.out.println(completionItemStrings(result));
+        assertThat(completionItemStrings(result)).contains("var", "int", "return");
+
         // Test completion after 'System.'
         caretPosition.setLine(4);
         caretPosition.setCharacter(15);

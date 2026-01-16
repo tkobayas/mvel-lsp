@@ -124,6 +124,7 @@ public class Mvel3CompletionHelper {
         CodeCompletionCore core = new CodeCompletionCore(parser, PREFERRED_RULES, Tokens.IGNORED);
         CodeCompletionCore.CandidatesCollection candidates = core.collectCandidates(caretTokenIndex, (ParserRuleContext) parseTree);
 
+        logger.debug("candidates.rules.size() = " + candidates.rules.size());
         if (candidates.rules.size() > 0) {
             return processPreferredRules(candidates, parser, parseTree, caretTokenIndex);
         }
@@ -222,9 +223,6 @@ public class Mvel3CompletionHelper {
             }
         }
 
-        if (semanticItems.isEmpty()) {
-            semanticItems.add(createCompletionItem("IDENTIFIER", CompletionItemKind.Text));
-        }
         return semanticItems;
     }
 

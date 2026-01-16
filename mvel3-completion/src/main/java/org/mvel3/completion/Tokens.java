@@ -21,6 +21,8 @@ public class Tokens {
             Mvel3Lexer.MUL_ASSIGN, Mvel3Lexer.DIV_ASSIGN, Mvel3Lexer.AND_ASSIGN, Mvel3Lexer.OR_ASSIGN, Mvel3Lexer.XOR_ASSIGN,
             Mvel3Lexer.MOD_ASSIGN, Mvel3Lexer.LSHIFT_ASSIGN, Mvel3Lexer.RSHIFT_ASSIGN, Mvel3Lexer.URSHIFT_ASSIGN,
             Mvel3Lexer.ARROW, Mvel3Lexer.COLONCOLON, Mvel3Lexer.AT, Mvel3Lexer.ELLIPSIS, Mvel3Lexer.WS, Mvel3Lexer.COMMENT,
-            Mvel3Lexer.LINE_COMMENT, Mvel3Lexer.IDENTIFIER
+            Mvel3Lexer.LINE_COMMENT, Mvel3Lexer.IDENTIFIER,
+            Mvel3Lexer.BigDecimalLiteral, Mvel3Lexer.BigIntegerLiteral,
+            Mvel3Lexer.MILLISECOND_LITERAL, Mvel3Lexer.SECOND_LITERAL, Mvel3Lexer.MINUTE_LITERAL, Mvel3Lexer.HOUR_LITERAL, Mvel3Lexer.DAY_LITERAL
     );
 }
