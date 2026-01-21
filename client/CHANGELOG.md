@@ -20,7 +20,7 @@
 - `@typescript-eslint/eslint-plugin`: 5.1.0 → 6.0.0
 - `@typescript-eslint/parser`: 5.1.0 → 6.0.0
 - `@vscode/test-electron`: 1.6.2 → 2.3.0
-- `@vscode/vsce`: 2.19.0 → 2.22.0
+- `@vscode/vsce`: 2.19.0 → 3.7.1
 - `eslint`: 8.1.0 → 8.50.0
 - `glob`: 7.1.7 → 10.3.0
 - `typescript`: 4.4.4 → 5.3.0
